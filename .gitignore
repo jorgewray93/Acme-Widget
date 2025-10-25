@@ -1,0 +1,37 @@
+# Composer dependencies
+/vendor/
+
+# PHPUnit cache and coverage
+.phpunit.result.cache
+coverage/
+clover.xml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+tmp/
+cache/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE & editor configs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# System files
+*.bak
+*.swp
+*.lock
+
+# Composer lock file
+composer.lock
+
