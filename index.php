@@ -1,38 +1,51 @@
 <?php
+declare(strict_types=1);
+
 require __DIR__ . '/vendor/autoload.php';
 
-use Acme\{Basket, Product, DeliveryRule, Offer};
+use Acme\Product;
+use Acme\Basket;
+use Acme\DeliveryRule;
+use Acme\Strategy\StandardDeliveryStrategy;
+use Acme\Strategy\BuyOneGetSecondHalfPriceOffer;    
 
-// Product Catalogue
+
 $catalogue = [
     'R01' => new Product('R01', 'Red Widget', 32.95),
     'G01' => new Product('G01', 'Green Widget', 24.95),
     'B01' => new Product('B01', 'Blue Widget', 7.95),
 ];
 
-// Delivery Rules
-$delivery = new DeliveryRule([
-    50 => 4.95,
-    90 => 2.95,
-]);
+// Strategy Pattern
+$deliveryRules = [
+    new DeliveryRule(0, 50, 4.95),
+    new DeliveryRule(50, 90, 2.95),
+    new DeliveryRule(90, INF, 0.00),
+];
+$deliveryStrategy = new StandardDeliveryStrategy($deliveryRules);
 
-$offer = new Offer('R01', 1, 1, 0.5); // buy one, second half price
+$offers = [
+    new BuyOneGetSecondHalfPriceOffer(),
+];
 
-$basket = new Basket($catalogue, $delivery, [$offer]);
+// setup basket
+$basket = new Basket($catalogue, $deliveryStrategy, $offers);
 
-// Example products added to basket
-$basket->add('R01');
-$basket->add('R01');
-$basket->add('G01');
 
-$total = $basket->total();
+$examples = [
+    ['B01', 'G01'],                  // Total esperado: $37.85
+    ['R01', 'R01'],                  // Total esperado: $54.37
+    ['R01', 'G01'],                  // Total esperado: $60.85
+    ['B01', 'B01', 'R01', 'R01', 'R01'], // Total esperado: $98.27
+];
 
-// Output
-echo "<h2>Acme Widget Co</h2>";
-echo "<p><strong>Products added:</strong></p>";
-echo "<ul>";
-echo "<li><b>R01-Red Widget</b> --- Regular price: 32.95 </li>";
-echo "<li><b>R01-Red Widget</b> --- Regular price: 32.95</li>";
-echo "<li><b>G01-Green Widget</b> --- Regular price: 24.95</li>";
-echo "</ul>";
-echo "<p><strong>Total:</strong> $" . number_format($total, 2) . "</p>";
+foreach ($examples as $items) {
+    $basket = new Basket($catalogue, $deliveryStrategy, $offers);
+    foreach ($items as $code) {
+        $basket->add($code);
+    }
+
+    echo "Productos: " . implode(', ', $items) . PHP_EOL;
+    echo "Total: $" . number_format($basket->total(), 2) . PHP_EOL;
+    echo str_repeat('-', 40) . PHP_EOL;
+}

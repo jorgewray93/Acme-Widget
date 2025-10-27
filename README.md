@@ -12,6 +12,7 @@ It includes:
 ---
 
 ## Installation
+## Commands
 
 Clone the repository and install dependencies:
 
@@ -21,58 +22,27 @@ composer install
 
 Setup the internal server
 ```bash
-php -S localhost:8000
+docker compose up -d --build
+docker compose exec app bash
 ```
 
 Open in the browser
 
-http://localhost:8000
-
----
-
-## Usage Example
-
-```php
-use Acme\{Basket, Product, DeliveryRule, Offer};
-
-$catalogue = [
-  'R01' => new Product('R01', 'Red Widget', 32.95),
-  'G01' => new Product('G01', 'Green Widget', 24.95),
-  'B01' => new Product('B01', 'Blue Widget', 7.95),
-];
-
-$delivery = new DeliveryRule([
-  50 => 4.95,
-  90 => 2.95,
-]);
-
-$offer = new Offer('R01', 1, 1, 0.5); // buy 1, get 2nd half price
-
-$basket = new Basket($catalogue, $delivery, [$offer]);
-$basket->add('R01');
-$basket->add('R01');
-
-echo $basket->total(); // 54.37
-```
+http://localhost:8080
 
 ---
 
 ## Running Tests
 
 ```bash
-vendor/bin/phpunit
+composer test
 ```
 
----
+## Running Analyse 
 
-## Expected Totals
-
-| Products | Expected Total |
-|-----------|----------------|
-| B01, G01 | 37.85 |
-| R01, R01 | 54.37 |
-| R01, G01 | 60.85 |
-| B01, B01, R01, R01, R01 | 98.27 |
+```bash
+composer analyse
+```
 
 ---
 
@@ -81,7 +51,16 @@ vendor/bin/phpunit
 ```
 acme-widget/
 ├── composer.json
+├── Dockerfile
+├── docker-compose.yml
+├── index.php
+├── phpstan.neon
+├── phpunit.xlm
 ├── src/
+│   ├── Strategy
+│   │   ├── DeliveryStrategyInterface.php
+│   │   ├── BuyOneGetSecondHalfPriceOffer.php
+│   │   └── OfferStrategyInterface.php
 │   ├── Basket.php
 │   ├── Product.php
 │   ├── DeliveryRule.php
@@ -101,6 +80,3 @@ acme-widget/
 - All monetary calculations use floating-point numbers rounded to two decimals for simplicity.
 
 ---
-
-## License
-This code test is provided for educational and evaluation purposes.

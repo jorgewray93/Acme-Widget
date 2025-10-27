@@ -1,67 +1,41 @@
 <?php
+declare(strict_types=1);
 namespace Acme;
-
-class Basket
-{
-    private array $catalogue;
-    private DeliveryRule $deliveryRule;
-    private array $offers;
+use Acme\Strategy\DeliveryStrategyInterface;
+final class Basket {
     private array $items = [];
 
     /**
-     * Construct
-     * @param array        $catalogue
-     * @param DeliveryRule $deliveryRule
-     * @param array        $offers
+     * Basket constructor.
+     * @param array<string, Product> $products
+     * @param DeliveryStrategyInterface $deliveryStrategy
+     * @param array<Offer> $offers
      */
-    public function __construct(array $catalogue, DeliveryRule $deliveryRule, array $offers = [])
-    {
-        $this->catalogue = $catalogue;
-        $this->deliveryRule = $deliveryRule;
-        $this->offers = $offers;
-    }
+    public function __construct(
+        private readonly array $products, 
+        private readonly DeliveryStrategyInterface $deliveryStrategy, 
+        private readonly array $offers
+    ) {}
 
     /**
-     * Add product to basket
+     * Add product to basket by product code
      * @param string $productCode
-     * @return void
+     * @throws \InvalidArgumentException
      */
-    public function add(string $productCode): void
-    {
-        if (!isset($this->catalogue[$productCode])) {
-            throw new \InvalidArgumentException("Unknown product code: {$productCode}");
-        }
-
-        if (!isset($this->items[$productCode])) {
-            $this->items[$productCode] = [
-                'price' => $this->catalogue[$productCode]->price,
-                'qty' => 0
-            ];
-        }
-        $this->items[$productCode]['qty']++;
+    public function add(string $productCode): void { 
+        if (!isset($this->products[$productCode])) throw new \InvalidArgumentException("Unknown product code $productCode"); 
+        $this->items[] = $this->products[$productCode]; 
     }
 
     /**
-     * Calculate total cost
+     * Calculate total price including delivery and offers
      * @return float
      */
-    public function total(): float
-    {
-        $subtotal = 0.0;
-        foreach ($this->items as $productCode => $data) {
-            $subtotal += $data['price'] * $data['qty'];
-        }
-
-        // Apply offers
-        $discount = 0.0;
-        foreach ($this->offers as $offer) {
-            $discount += $offer->apply($this->items);
-        }
-        $subtotal -= $discount;
-
-        // Apply delivery
-        $delivery = $this->deliveryRule->getCost($subtotal);
-
+    public function total(): float {
+        $items = $this->items;
+        foreach ($this->offers as $offer) { $items = $offer->strategy->apply($items); }
+        $subtotal = array_sum(array_map(fn($i) => $i->price, $items));
+        $delivery = $this->deliveryStrategy->calculate($subtotal);
         return round($subtotal + $delivery, 2);
     }
 }

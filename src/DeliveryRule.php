@@ -1,28 +1,16 @@
 <?php
+declare(strict_types=1);
 namespace Acme;
-
-class DeliveryRule
-{
-    private array $rules; 
-
-    public function __construct(array $rules)
-    {
-        $this->rules = $rules;
-        ksort($this->rules);
-    }
-
+final class DeliveryRule {
     /**
-     * Get delivery cost based on subtotal
-     * @param float  $subtotal
-     * @return float
+     * Delivery rule constructor
+     * @param float $minAmount
+     * @param float $maxAmount
+     * @param float $charge
      */
-    public function getCost(float $subtotal): float
-    {
-        foreach ($this->rules as $limit => $cost) {
-            if ($subtotal < $limit) {
-                return $cost;
-            }
-        }
-        return 0.0;
-    }
+    public function __construct(
+        public readonly float $minAmount, 
+        public readonly float $maxAmount,
+         public readonly float $charge
+    ) {}
 }

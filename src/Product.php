@@ -1,22 +1,16 @@
 <?php
+declare(strict_types=1);
 namespace Acme;
-
-class Product
-{
-    public string $code;
-    public string $name;
-    public float $price;
-
+final class Product {
     /**
-     * Construct
+     * Product constructor
      * @param string $code
      * @param string $name
-     * @param float  $price
+     * @param float $price
      */
-    public function __construct(string $code, string $name, float $price)
-    {
-        $this->code = $code;
-        $this->name = $name;
-        $this->price = $price;
-    }
+    public function __construct(
+        public readonly string $code,
+        public readonly string $name,
+        public readonly float $price
+    ) {}
 }
